@@ -1,7 +1,13 @@
-import(cs50.h)
+#include <cs50.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 
-printf("Is Madi the Goat?");
-printf("1: Strongly Disagree");
-printf("5: Strongly Disagree");
+int main(int argc, char *argv[1])
+{
+  printf("Is Madi the Goat?\n");
+  printf("1: Strongly Disagree\n");
+  printf("5: Strongly Disagree\n");
 
-get_int(Enter your Answer: );
+  int answer = get_int(Enter your Answer: );
+}
