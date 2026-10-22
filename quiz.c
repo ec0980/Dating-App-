@@ -17,17 +17,19 @@ Compatibility Quiz
 #include <string.h>
 //^libraries needed for code
 
+#define QUESTIONS 20
+//^defines questions as 20 to be used throughout the program (easy to change)
+
 int getAnswer(int questionNumber, string question);
 //^defining functions early to be used later
 
 int main(int argc, char *argv[1])
 //^main method
 {
-  int questionNumber = 20;
   //^defines an integer used to store the number of questions
-  int answers[questionNumber] = [];
+  int answers[QUESTIONS];
   //^defines an integer array to hold all the users answers (currently empty)
-  string questions[questionNumber] =
+  string questions[QUESTIONS] =
   //^defines a string array that holds all the questions
   {
     "I feel loved when my partner expresses appreciation verbally.",
@@ -52,7 +54,7 @@ int main(int argc, char *argv[1])
     "I express my feelings rather than hide what bothers me."
     };
 
-  for(int i = 0; i < 20; i++)
+  for(int i = 0; i < QUESTIONS; i++)
   //^for loop used to navigate through the 20 questions in the string array
   {
       answers[i] = getAnswer(i + 1, questions[i]);
@@ -85,10 +87,10 @@ int getAnswer(int questionNumber, string question)
 
   do
   {
-    answer = get_int(Enter your Answer (1-5)!: );
+    answer = get_int("Enter your Answer (1-5)!: ");
     //^answer variable redefined to a get_int to prompt the user
   }
-  while (answer < 1 || answer > 5)
+  while (answer < 1 || answer > 5);
   //^do while loop to continue asking for an answer until the user enters an integer between 1 and 5
 
   return answer;
