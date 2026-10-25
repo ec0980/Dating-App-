@@ -20,7 +20,7 @@ Compatibility Quiz
 
 #define QUESTIONS 20
 //^defines questions as 20 to be used throughout the program (easy to change)
-#define CHARACTERS 9
+#define CHARACTERS 15
 //^defines the number of fictional characters the user can be matched with
 #define MAX_DIFFERENCE 4
 //^the biggest possible gap on one question (answering 1 when the character answered 5)
@@ -81,7 +81,13 @@ int main(int argc, char *argv[1])
     {"Sherlock Holmes", "Sherlock Holmes stories", {2,2, 3,5, 1,1, 3,4, 1,1, 2,1, 5,5, 5,5, 3,1, 1,1}},
     {"Tony Stark",      "Iron Man",                {4,5, 2,2, 5,5, 4,4, 3,3, 2,2, 3,3, 5,4, 2,2, 2,1}},
     {"Jack Sparrow",    "Pirates of the Caribbean",{5,4, 2,1, 4,4, 2,2, 4,3, 3,2, 2,1, 5,5, 2,3, 1,1}},
-    {"Shrek",           "Shrek",                   {2,2, 4,4, 2,3, 4,4, 3,3, 2,3, 4,5, 5,5, 2,4, 2,3}}
+    {"Shrek",           "Shrek",                   {2,2, 4,4, 2,3, 4,4, 3,3, 2,3, 4,5, 5,5, 2,4, 2,3}},
+    {"Harry Potter",    "Harry Potter",            {3,4, 4,4, 3,3, 4,4, 3,3, 2,4, 4,5, 4,3, 2,4, 2,2}},
+    {"Katniss Everdeen","The Hunger Games",        {1,2, 3,4, 2,2, 5,5, 2,3, 1,2, 2,4, 5,5, 2,2, 1,1}},
+    {"Mario",           "Super Mario Bros.",       {3,3, 3,2, 3,4, 5,5, 3,3, 2,4, 5,5, 3,3, 4,4, 3,3}},
+    {"Darth Vader",     "Star Wars",               {2,4, 2,2, 1,1, 2,2, 1,1, 1,1, 1,3, 4,4, 1,1, 1,2}},
+    {"Pikachu",         "Pokemon",                 {4,4, 5,5, 3,4, 4,4, 4,4, 4,4, 4,5, 2,2, 3,4, 4,5}},
+    {"Homer Simpson",   "The Simpsons",            {4,4, 4,3, 5,5, 2,2, 5,5, 3,3, 4,3, 4,3, 2,4, 4,5}}
   };
 
   for(int i = 0; i < QUESTIONS; i++)
@@ -125,7 +131,7 @@ int main(int argc, char *argv[1])
   //^prints every character from best to worst match
   {
       int c = ranking[i];
-      printf("%i. %-17s (%s): %.1f%%\n", i + 1, characters[c].name, characters[c].source, scores[c]);
+      printf("%2i. %-17s (%s): %.1f%%\n", i + 1, characters[c].name, characters[c].source, scores[c]);
   }
 
   printf("\nYour perfect match is %s from %s!\n", characters[ranking[0]].name, characters[ranking[0]].source);
