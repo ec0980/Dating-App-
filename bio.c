@@ -16,7 +16,8 @@ Compatibility Quiz
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//^libraries needed for code
+#include "security.h"
+//^libraries needed for code (security.h holds the privacy and safety features)
 
 #define QUESTIONS 20
 //^defines questions as 20 to be used throughout the program (easy to change)
@@ -55,7 +56,7 @@ float matchPercent(int userAnswers[], int characterAnswers[]);
 int getAnswer(int questionNumber, string question);
 //^defines a function used to ask questions and validate user input
 
-void showProfile(character c, float compatibility);
+void showProfile(character c, float compatibility, privacy *p);
 //^defines a function used to display detailed character profile information
 
 
@@ -185,6 +186,28 @@ int main(void)
   //^defines an array of characters and how each one would answer the 20 questions (1-5)
   //^order of answers: words(2), time(2), gifts(2), acts of service(2), touch(2), communication(2), trust(2), independence(2), conflict(2), vulnerability(2)
 
+  string names[CHARACTERS];
+  for(int i = 0; i < CHARACTERS; i++)
+  {
+      names[i] = characters[i].name;
+      //^gives security.c a simple list of character names for the block list
+  }
+
+  privacy settings;
+  defaultPrivacy(&settings);
+  if (!loadPrivacy(&settings, CHARACTERS))
+  //^loads saved settings and the block list from the last session
+  {
+      defaultPrivacy(&settings);
+      //^if the file is missing or damaged, safely fall back to defaults
+  }
+
+  if (!startMenu(&settings, names, CHARACTERS))
+  //^start menu with the quiz, privacy settings, privacy notice, and quit options
+  {
+      return 0;
+  }
+
   for(int i = 0; i < QUESTIONS; i++)
   //^for loop used to navigate through the 20 questions in the string array
   {
@@ -199,17 +222,34 @@ int main(void)
   int ranking[CHARACTERS];
   //^arrays to hold each character's match percent and the order to print them in
 
+  int available = 0;
+  //^counts how many characters are NOT blocked
+
   for(int i = 0; i < CHARACTERS; i++)
   //^for loop to calculate the match percent for every character
   {
       scores[i] = matchPercent(answers, characters[i].answers);
-      ranking[i] = i;
+
+      if (!settings.blocked[i])
+      {
+          ranking[available] = i;
+          available++;
+          //^only unblocked characters are added to the ranking
+      }
   }
 
-  for(int i = 0; i < CHARACTERS - 1; i++)
+  if (available == 0)
+  //^if the user has blocked everyone there is nothing to show
+  {
+      printf("\nEvery character is blocked, so there are no matches to show.\n");
+      printf("Unblock someone in Privacy and safety settings to see matches.\n");
+      return 0;
+  }
+
+  for(int i = 0; i < available - 1; i++)
   //^bubble sort to put the characters in order from best match to worst match
   {
-      for(int j = 0; j < CHARACTERS - 1 - i; j++)
+      for(int j = 0; j < available - 1 - i; j++)
       {
           if(scores[ranking[j]] < scores[ranking[j + 1]])
           {
@@ -221,114 +261,126 @@ int main(void)
       }
   }
 
-    printf("\n===== YOUR MATCHES =====\n");
-  for(int i = 0; i < CHARACTERS; i++)
-  //^prints every character from best to worst match
+  printf("\n===== YOUR MATCHES =====\n");
+  for(int i = 0; i < available; i++)
+  //^prints every unblocked character from best to worst match
   {
       int c = ranking[i];
-      printf("%2i. %-17s (%s): %.1f%%\n", i + 1, characters[c].name, characters[c].source, scores[c]);
+      if (settings.showCompatibility)
+      {
+          printf("%2i. %-17s (%s): %.1f%%\n", i + 1, characters[c].name, characters[c].source, scores[c]);
+      }
+      else
+      {
+          printf("%2i. %-17s (%s)\n", i + 1, characters[c].name, characters[c].source);
+          //^compatibility percent is hidden when the user turned that setting off
+      }
   }
 
-  printf("\nYour perfect match is %s from %s!\n", characters[ranking[0]].name, characters[ranking[0]].source);
+  if (settings.showCompatibility)
+  {
+      printf("\nYour perfect match is %s from %s!\n", characters[ranking[0]].name, characters[ranking[0]].source);
+  }
+  else
+  {
+      printf("\nYour top match is %s from %s!\n", characters[ranking[0]].name, characters[ranking[0]].source);
+  }
   //^announces the user's top match
 
   char decision;
-//^creates a character variable to store whether the user enters A or R
+  //^creates a character variable to store whether the user enters A, R, B, or F
 
-int currentMatch = 0;
-//^stores the user's decision and which ranked character is currently being offered
+  int currentMatch = 0;
+  //^stores which ranked character is currently being offered
 
-while (currentMatch < CHARACTERS)
-//^continues until the user accepts a match or rejects every character
-{
-    int c = ranking[currentMatch];
-    //^gets the character's position from the ranking array
+  while (currentMatch < available)
+  //^continues until the user accepts a match or runs out of suggestions
+  {
+      int c = ranking[currentMatch];
+      //^gets the character's position from the ranking array
 
-    printf("\n===== MATCH DECISION =====\n");
-    printf("Suggested match: %s from %s\n",
-           characters[c].name,
-           characters[c].source);
-    //^prints the current suggested character's name and where they are from
+      printf("\n===== MATCH DECISION =====\n");
+      printf("Suggested match: %s from %s\n",
+             characters[c].name,
+             characters[c].source);
+      //^prints the current suggested character's name and where they are from
 
-    printf("Compatibility: %.1f%%\n", scores[c]);
-    //^displays the current character and compatibility percentage
+      if (settings.showCompatibility)
+      {
+          printf("Compatibility: %.1f%%\n", scores[c]);
+      }
+      //^displays the compatibility percentage unless the user hid it
 
-    do
-    {
-        decision = get_char("Enter A to accept or R to reject: ");
-        //^asks the user to accept or reject the suggested character
+      decision = getDecision();
+      //^asks the user to accept, reject, block, or report (returns A, R, B, or F)
 
-        if (decision != 'A' && decision != 'a' &&
-            decision != 'R' && decision != 'r')
-        {
-            printf("Invalid response. Please enter A or R.\n");
-        }
-    }
-    while (decision != 'A' && decision != 'a' &&
-           decision != 'R' && decision != 'r');
-    //^continues until the user enters A or R
+      if (decision == 'A')
+      {
+          printf("\nYou accepted %s from %s!\n",
+                 characters[c].name,
+                 characters[c].source);
+          //^prints the accepted character
 
+          if (settings.showCompatibility)
+          {
+              printf("Compatibility: %.1f%%\n", scores[c]);
+          }
 
-    if (decision == 'A' || decision == 'a')
-    {
-    printf("\nYou accepted %s from %s!\n",
-           characters[c].name,
-           characters[c].source);
-    //^prints the accepted character
+          printf("Your decision has been recorded.\n");
+          //^confirms the user's choice
 
-    printf("Compatibility: %.1f%%\n", scores[c]);
-    //^prints the compatibility score
+          printf("\n===== YOUR MATCH PROFILE =====\n");
+          //^begins the profile page for the accepted character
 
-    printf("Your decision has been recorded.\n");
-    //^confirms the user's choice
+          showProfile(characters[c], scores[c], &settings);
+          //^displays the accepted character's profile (respecting visibility settings)
 
-    printf("\n===== YOUR MATCH PROFILE =====\n");
-    //^begins the profile page for the accepted character
+          break;
+          //^ends the loop because the user accepted the match
+      }
+      else
+      {
+          if (decision == 'B')
+          {
+              blockCharacter(&settings, names, CHARACTERS, c);
+              //^blocks the character so they never appear again
+          }
+          else if (decision == 'F')
+          {
+              reportCharacter(&settings, names, CHARACTERS, c);
+              //^logs a report and blocks the character
+          }
+          else
+          {
+              printf("\nYou rejected %s from %s.\n",
+                     characters[c].name,
+                     characters[c].source);
+          }
 
-    showProfile(characters[c], scores[c]);
-    //^displays the accepted character's biography, traits, interests, and compatibility information
+          currentMatch++;
+          //^moves to the next person in the ranking list
 
-    break;
-    //^ends the loop because the user accepted the match
-    }
-    else
-    {
-        printf("\nYou rejected %s from %s.\n",
-               characters[c].name,
-               characters[c].source);
+          if (currentMatch < available)
+          {
+              int next = ranking[currentMatch];
+              //^finds the original array position of the next-best match
 
-        printf("Compatibility: %.1f%%\n", scores[c]);
+              printf("\nMoving to your next best match...\n");
+              printf("Next match: %s from %s\n",
+                     characters[next].name,
+                     characters[next].source);
+          }
+      }
+  }
 
-        currentMatch++;
-        //^moves to the next person in the ranking list
+  if (currentMatch == available)
+  {
+      printf("\nNo match was selected.\n");
+  }
+  //^prints this message if the user went through every available suggestion
 
-        if (currentMatch < CHARACTERS)
-        {
-            int next = ranking[currentMatch];
-            //^finds the original array position of the next-best match
-
-            printf("\nMoving to your next best match...\n");
-
-            printf("Next match: %s from %s\n",
-                   characters[next].name,
-                   characters[next].source);
-
-            printf("Compatibility: %.1f%%\n",
-                   scores[next]);
-        }
-    }
-}
-
-if (currentMatch == CHARACTERS)
-{
-    printf("\nYou rejected every available match.\n");
-    printf("No match was selected.\n");
-}
-//^prints this message if all 15 characters were rejected
-
-
-return 0;
-//^returns 0 to terminate the program
+  return 0;
+  //^returns 0 to terminate the program
 }
 
 int getAnswer(int questionNumber, string question)
@@ -378,7 +430,7 @@ float matchPercent(int userAnswers[], int characterAnswers[])
   //^turns the difference into a percent: 0 difference = 100%, max difference = 0%
 }
 
-void showProfile(character c, float compatibility)
+void showProfile(character c, float compatibility, privacy *p)
 //^showProfile method used to display detailed information about a character
 {
     printf("\n============================================\n");
@@ -390,20 +442,30 @@ void showProfile(character c, float compatibility)
     printf("SOURCE: %s\n\n", c.source);
     //^prints where the character is from
 
-    printf("BIOGRAPHY:\n%s\n\n", c.bio);
-    //^prints the character's biography
+    if (p->showBio)
+    {
+        printf("BIOGRAPHY:\n%s\n\n", c.bio);
+        //^prints the character's biography
+    }
 
-    printf("PERSONALITY TRAITS:\n%s\n\n", c.traits);
-    //^prints the character's personality traits
+    if (p->showTraits)
+    {
+        printf("PERSONALITY TRAITS:\n%s\n\n", c.traits);
+        //^prints the character's personality traits
+    }
 
-    printf("INTERESTS:\n%s\n\n", c.interests);
-    //^prints the character's hobbies and interests
+    if (p->showInterests)
+    {
+        printf("INTERESTS:\n%s\n\n", c.interests);
+        //^prints the character's hobbies and interests
+    }
 
-    printf("COMPATIBILITY: %.1f%%\n", compatibility);
-    //^prints the compatibility percentage calculated by the matching system
+    if (p->showCompatibility)
+    {
+        printf("COMPATIBILITY: %.1f%%\n", compatibility);
+        //^prints the compatibility percentage calculated by the matching system
+    }
 
     printf("============================================\n");
     //^closing divider marking the end of the profile page
 }
-
-
