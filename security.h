@@ -1,9 +1,15 @@
 /*
+Jo Yi Tham
 Akshara Bharath
-Privacy and Safety Features (Gate 5)
-Love at First Write
+Emma Cai
+Madison Tran
+Fiona Mullins
+Commander Schenk
+4 November 2026
+Period 3
+Compatibility Quiz
 */
-//^information (name, project, gate)
+//^information (name, teacher, date, period, project name)
 
 #ifndef SECURITY_H
 #define SECURITY_H
