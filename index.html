@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Love at First Write</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <h1>Love at First Write</h1>
+      <p class="tagline">Compatibility Quiz</p>
+    </header>
+
+    <!-- Start menu -->
+    <section id="screen-menu" class="screen">
+      <h2>Main Menu</h2>
+      <div class="button-stack">
+        <button type="button" data-action="start-quiz">1: Take the quiz</button>
+        <button type="button" data-action="open-privacy">2: Privacy and safety settings</button>
+        <button type="button" data-action="open-notice">3: Privacy notice</button>
+        <button type="button" data-action="quit">4: Quit</button>
+      </div>
+    </section>
+
+    <!-- Privacy and safety -->
+    <section id="screen-privacy" class="screen hidden">
+      <h2>Privacy and Safety</h2>
+      <p class="hint">Choose 1–4 to switch a setting between shown and hidden.</p>
+      <div class="button-stack" id="privacy-toggles"></div>
+      <div class="button-stack">
+        <button type="button" data-action="view-blocked">5: View blocked characters</button>
+        <button type="button" data-action="unblock-prompt">6: Unblock a character</button>
+        <button type="button" data-action="reset-visibility">7: Reset visibility settings</button>
+        <button type="button" data-action="back-menu">8: Back</button>
+      </div>
+      <div id="blocked-list" class="info-box hidden"></div>
+    </section>
+
+    <!-- Privacy notice -->
+    <section id="screen-notice" class="screen hidden">
+      <h2>Privacy Notice</h2>
+      <ul class="notice-list">
+        <li>Your quiz answers are used only to calculate matches during this session.</li>
+        <li>Your answers are not saved to disk.</li>
+        <li>Only your visibility settings and block list are saved (in browser local storage).</li>
+        <li>Reports are saved so they can be reviewed.</li>
+        <li>You can block or report any profile, and change settings at any time.</li>
+      </ul>
+      <button type="button" data-action="back-menu">Back</button>
+    </section>
+
+    <!-- Quiz -->
+    <section id="screen-quiz" class="screen hidden">
+      <h2>Question <span id="quiz-number">1</span> of 20</h2>
+      <p id="quiz-question" class="question-text"></p>
+      <div class="likert button-stack">
+        <button type="button" data-answer="1">1: Strongly Disagree</button>
+        <button type="button" data-answer="2">2: Disagree</button>
+        <button type="button" data-answer="3">3: Neutral</button>
+        <button type="button" data-answer="4">4: Agree</button>
+        <button type="button" data-answer="5">5: Strongly Agree</button>
+      </div>
+      <div class="progress-track" aria-hidden="true">
+        <div id="quiz-progress" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <!-- Matches list -->
+    <section id="screen-matches" class="screen hidden">
+      <h2>Your Matches</h2>
+      <p id="matches-thanks">All responses have been recorded! Thank you!</p>
+      <ol id="matches-list" class="matches-list"></ol>
+      <p id="top-match" class="top-match"></p>
+      <button type="button" data-action="begin-decisions">Continue to match decisions</button>
+    </section>
+
+    <!-- Match decision -->
+    <section id="screen-decision" class="screen hidden">
+      <h2>Match Decision</h2>
+      <p id="decision-name" class="decision-name"></p>
+      <p id="decision-compat" class="decision-compat"></p>
+      <div class="button-stack row">
+        <button type="button" data-decision="A">Accept</button>
+        <button type="button" data-decision="R">Reject</button>
+        <button type="button" data-decision="B">Block</button>
+        <button type="button" data-decision="F">Report</button>
+      </div>
+      <p id="decision-status" class="status"></p>
+    </section>
+
+    <!-- Report prompt -->
+    <section id="screen-report" class="screen hidden">
+      <h2>Report Profile</h2>
+      <p>Briefly describe why you are reporting this profile:</p>
+      <textarea id="report-reason" maxlength="100" rows="3" placeholder="Reason (max 100 characters)"></textarea>
+      <div class="button-stack row">
+        <button type="button" data-action="submit-report">Submit report</button>
+        <button type="button" data-action="cancel-report">Cancel</button>
+      </div>
+    </section>
+
+    <!-- Accepted profile -->
+    <section id="screen-profile" class="screen hidden">
+      <h2>Your Match Profile</h2>
+      <div id="profile-content" class="profile-card"></div>
+      <button type="button" data-action="back-menu">Back to menu</button>
+    </section>
+
+    <!-- Quit / idle -->
+    <section id="screen-quit" class="screen hidden">
+      <h2>Goodbye!</h2>
+      <p>Thanks for using Love at First Write.</p>
+      <button type="button" data-action="back-menu">Return to menu</button>
+    </section>
+
+    <!-- No matches -->
+    <section id="screen-empty" class="screen hidden">
+      <h2>No Matches</h2>
+      <p id="empty-message"></p>
+      <button type="button" data-action="back-menu">Back to menu</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
