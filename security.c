@@ -16,6 +16,7 @@ Compatibility Quiz
 #include <stdlib.h>
 #include <string.h>
 #include "security.h"
+#include "sound.h"
 //^libraries needed for code
 
 #define PRIVACY_FILE "privacy.dat"
@@ -209,9 +210,10 @@ int startMenu(privacy *p, string names[], int count)
         printf("1: Take the quiz\n");
         printf("2: Privacy and safety settings\n");
         printf("3: Privacy notice\n");
-        printf("4: Quit\n");
+        printf("4: Sound: %s\n", soundIsOn() ? "ON" : "OFF");
+        printf("5: Quit\n");
 
-        choice = get_int("Choose an option (1-4): ");
+        choice = get_int("Choose an option (1-5): ");
 
         if (choice == 2)
         {
@@ -223,12 +225,17 @@ int startMenu(privacy *p, string names[], int count)
         }
         else if (choice == 4)
         {
+            soundToggle();
+            //^switches sound effects on or off
+        }
+        else if (choice == 5)
+        {
             printf("\nGoodbye!\n");
             return 0;
         }
         else if (choice != 1)
         {
-            printf("Invalid choice. Please enter 1, 2, 3, or 4.\n");
+            printf("Invalid choice. Please enter 1, 2, 3, 4, or 5.\n");
         }
     }
 
