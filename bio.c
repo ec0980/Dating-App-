@@ -17,6 +17,7 @@ Compatibility Quiz
 #include <stdlib.h>
 #include <string.h>
 #include "security.h"
+#include "sound.h"
 //^libraries needed for code (security.h holds the privacy and safety features)
 
 #define QUESTIONS 20
@@ -202,11 +203,17 @@ int main(void)
       //^if the file is missing or damaged, safely fall back to defaults
   }
 
+  soundInit();
+  //^creates the sound effects and finds a way to play them
+
   if (!startMenu(&settings, names, CHARACTERS))
   //^start menu with the quiz, privacy settings, privacy notice, and quit options
   {
       return 0;
   }
+
+  playSound(SOUND_START);
+  //^plays a short chime as the quiz begins
 
   for(int i = 0; i < QUESTIONS; i++)
   //^for loop used to navigate through the 20 questions in the string array
@@ -260,6 +267,9 @@ int main(void)
           }
       }
   }
+
+  playSound(SOUND_RESULTS);
+  //^plays a rising chime as the matches appear
 
   printf("\n===== YOUR MATCHES =====\n");
   for(int i = 0; i < available; i++)
@@ -316,6 +326,9 @@ int main(void)
 
       if (decision == 'A')
       {
+          playSound(SOUND_ACCEPT);
+          //^plays a happy chime when a match is accepted
+
           printf("\nYou accepted %s from %s!\n",
                  characters[c].name,
                  characters[c].source);
@@ -342,16 +355,20 @@ int main(void)
       {
           if (decision == 'B')
           {
+              playSound(SOUND_BLOCK);
               blockCharacter(&settings, names, CHARACTERS, c);
               //^blocks the character so they never appear again
           }
           else if (decision == 'F')
           {
               reportCharacter(&settings, names, CHARACTERS, c);
+              playSound(SOUND_REPORT);
+              //^plays two short beeps after the report is saved
               //^logs a report and blocks the character
           }
           else
           {
+              playSound(SOUND_REJECT);
               printf("\nYou rejected %s from %s.\n",
                      characters[c].name,
                      characters[c].source);
