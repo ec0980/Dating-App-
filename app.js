@@ -17,6 +17,27 @@ const PRIVACY_KEY = "loveAtFirstWrite.privacy";
 const REPORTS_KEY = "loveAtFirstWrite.reports";
 const MAX_REASON = 100;
 
+async function sendToServer(data) {
+  try {
+    const response = await fetch("/api/privacy", {
+      //^sends informations from JavaScript to the Python server for processing
+      method: "POST",
+      //^tells the server that the request is a POST request, which means that data is being sent to the server
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+      //^converts the JavaScript object data into a JSON string and sends it as the body of the request
+    });
+
+    return await response.json();
+    //^reads the response from the server and converts it back into a JavaScript object using response.json()
+  } catch (error) {
+    console.error("Could not connect to the server:", error);
+    return { error: "Server connection failed" };
+  }
+}
+
 const questions = [
   "I feel loved when my partner expresses appreciation verbally.",
   "Hearing that my partner is proud of me makes me feel secure.",
@@ -267,8 +288,19 @@ function blockCharacter(index) {
   if (index < 0 || index >= CHARACTERS) {
     return;
   }
+
   settings.blocked[index] = 1;
   savePrivacy();
+
+  sendToServer({
+    action: "block",
+    index: index
+  }).then(result => {
+    if (result.error) {
+      console.warn("Could not block character in C: ", result.error);
+    }
+  });
+
   setStatus(`decision-status`, `${names[index]} has been blocked. They will not appear in your matches again.`);
 }
 
@@ -289,6 +321,16 @@ function reportCharacter(index, reasonText) {
   if (cleaned.length === 0) {
     cleaned = "No reason given";
   }
+
+  sendToServer({
+    action: "report",
+    index: index,
+    reason: cleaned
+  }).then(result => {
+    if (result.error) {
+      console.warn("Could not save report to C: ", result.error);
+    }
+  });
 
   try {
     const existing = JSON.parse(localStorage.getItem(REPORTS_KEY) || "[]");
@@ -336,10 +378,21 @@ function renderPrivacyToggles() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = `${item.label}:       ${shownLabel(settings[item.key])}`;
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       settings[item.key] = settings[item.key] ? 0 : 1;
+
       savePrivacy();
       renderPrivacyToggles();
+
+      const result = await sendToServer({
+        action: "set",
+        setting: item.key,
+        value: settings[item.key]
+      });
+
+      if (result.error) {
+        console.error("Could not save setting to C: ", result.error);
+      }
     });
     container.appendChild(btn);
   });
@@ -364,11 +417,24 @@ function renderBlockedList(forUnblock) {
         unblockBtn.type = "button";
         unblockBtn.className = "inline-btn";
         unblockBtn.textContent = "Unblock";
+
         unblockBtn.addEventListener("click", () => {
           settings.blocked[i] = 0;
           savePrivacy();
-          renderBlockedList(true);
+
+          sendToServer({
+            action: "unblock",
+            index: i
+        }).then(result => {
+          if (result.error) {
+            console.warn("Could not unblock character in C: ", result.error);
+          }
         });
+
+        renderBlockedList(true);
+
+      });
+
         li.appendChild(document.createTextNode(" "));
         li.appendChild(unblockBtn);
       }
@@ -630,6 +696,15 @@ function wireEvents() {
         settings.showInterests = 1;
         settings.showCompatibility = 1;
         savePrivacy();
+
+        ["showBio", "showTraits", "showInterests", "showCompatibility"].forEach(setting => {
+          sendToServer({
+            action: "set",
+            setting: setting,
+            value: 1
+          });
+        });
+
         renderPrivacyToggles();
         break;
       case "begin-decisions":
@@ -638,10 +713,12 @@ function wireEvents() {
       case "submit-report": {
         const c = ranking[currentMatch];
         const reason = document.getElementById("report-reason").value;
+
         reportCharacter(c, reason);
         advanceMatch();
         break;
       }
+
       case "cancel-report":
         showScreen("decision");
         break;
@@ -655,6 +732,7 @@ function init() {
   if (!loadPrivacy()) {
     settings = defaultPrivacy();
   }
+
   wireEvents();
   showScreen("menu");
 }
